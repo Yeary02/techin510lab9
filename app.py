@@ -1,40 +1,26 @@
-from flask import Flask, request, render_template
+from flask import Flask, render_template, request, redirect, url_for
 
 app = Flask(__name__)
 
-db = [
-    {"id": 1, "name": "photo1"},
-    {"id": 2, "name": "photo2"},
-    {"id": 3, "name": "photo3"},
-]
+# In-memory database for tasks
+tasks = []
 
-
-@app.route("/")
+@app.route('/')
 def index():
-    return render_template("index.html", photos=db)
+    return render_template('index.html', tasks=tasks)
 
+@app.route('/add', methods=['POST'])
+def add():
+    task = request.form.get('task')
+    if task:
+        tasks.append(task)
+    return redirect(url_for('index'))
 
-@app.route("/photos", methods=["GET", "POST"])
-def photos():
-    if request.method == "POST":
-        # save the photo
-        # redirect to the photos page
-        return "create photos"
+@app.route('/delete/<int:task_id>')
+def delete(task_id):
+    if 0 <= task_id < len(tasks):
+        tasks.pop(task_id)
+    return redirect(url_for('index'))
 
-    # show the list of photos
-    return "list photos"
-
-
-@app.route("/photos/new", methods=["GET"])
-def new_photos():
-    return "new photo"
-
-
-@app.route("/photos/<int:id>", methods=["GET", "PUT", "DELETE"])
-def show_photo(id):
-    return "photo details for id: %s" % id
-
-
-@app.route("/photos/<int:id>/edit", methods=["GET"])
-def edit_photo(id):
-    return "edit photo for id: %s" % id
+if __name__ == '__main__':
+    app.run(debug=True)
